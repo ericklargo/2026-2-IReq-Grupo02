@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SGE-Oikos · Prototipo funcional v0.2 (LB-0.8)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏢%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f3f7f6;--su:#fff;--tx:#18262b;--t2:#46595f;--pr:#0e5a5a;--pt:#fff;--bo:#aebfc0;--er:#b3261e;--ok:#1b6b3a;--av:#7a4f00;--de:#b8860b;--hi:#e7f2f1;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f191c;--su:#172327;--tx:#e6eeee;--t2:#a5b8bb;--pr:#5cc2c2;--pt:#06201f;--bo:#34484d;--er:#ff8a80;--ok:#7fd59a;--av:#f2c46b;--hi:#1e3136;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f191c;--su:#172327;--tx:#e6eeee;--t2:#a5b8bb;--pr:#5cc2c2;--pt:#06201f;--bo:#34484d;--er:#ff8a80;--ok:#7fd59a;--av:#f2c46b;--hi:#1e3136;color-scheme:dark}
+*,*:before,*:after{box-sizing:inherit}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--su);border-bottom:3px solid var(--de);padding:.8rem 1rem}
+header h2{margin:0;font:700 1.15rem Georgia,"Times New Roman",serif}header p{margin:.1rem 0 .6rem;color:var(--t2);font-size:.88rem}
+.sim{display:flex;flex-wrap:wrap;gap:.6rem 1rem}.sim label{font-size:.85rem;display:flex;flex-direction:column;gap:.15rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.6rem 1rem;background:var(--su);border-bottom:1px solid var(--bo)}
+nav a{min-height:44px;display:inline-flex;align-items:center;padding:0 .8rem;border:1px solid var(--bo);border-radius:6px;color:var(--tx);text-decoration:none;font-size:.92rem}
+nav a[aria-current="page"]{background:var(--pr);color:var(--pt);border-color:var(--pr);font-weight:700}
+main{max-width:56rem;margin:0 auto;padding:1rem}main:focus{outline:none}
+h1{font:700 1.55rem/1.2 Georgia,"Times New Roman",serif;margin:.4rem 0 .6rem}h1:focus{outline:none}
+h2{font:700 1.15rem/1.3 Georgia,"Times New Roman",serif;margin:1.3rem 0 .5rem}
+.c{margin:0 0 1rem}label{font-weight:600;display:block}.ay{margin:.1rem 0 .3rem;color:var(--t2);font-size:.88rem}
+input,select,textarea{width:100%;min-height:44px;padding:.5rem .6rem;font:inherit;color:var(--tx);background:var(--su);border:1.5px solid var(--bo);border-radius:6px}
+input[aria-invalid],select[aria-invalid],textarea[aria-invalid]{border-color:var(--er);border-width:2px}
+.er{margin:.25rem 0 0;color:var(--er);font-weight:600;min-height:0}.er:not(:empty):before{content:"✖ "}
+button,.btn{min-height:44px;padding:0 1.1rem;font:inherit;font-weight:700;background:var(--pr);color:var(--pt);border:0;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
+button.s{background:var(--su);color:var(--tx);border:1.5px solid var(--bo)}
+button.sm{min-height:34px;padding:0 .7rem;font-size:.85rem}
+:focus-visible{outline:3px solid var(--pr);outline-offset:2px}
+.res{color:var(--er);font-weight:700}.ok{color:var(--ok);font-weight:700}.av{color:var(--av);font-weight:700}
+.slip{background:var(--su);border:1px dashed var(--bo);border-left:6px solid var(--de);border-radius:4px;padding:1rem 1.2rem;margin:1rem 0}
+.slip dl{display:grid;grid-template-columns:max-content 1fr;gap:.35rem 1rem;margin:0}.slip dt{color:var(--t2)}.slip dd{margin:0;font-weight:600}
+.w{overflow-x:auto;background:var(--su);border:1px solid var(--bo);border-radius:6px;margin:.6rem 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;padding:.5rem .65rem;border-bottom:1px solid var(--bo);vertical-align:top}
+th{background:var(--hi);font-weight:700}tr:last-child td{border-bottom:0}
+.nota{font-size:.85rem;color:var(--t2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.75rem;margin:.8rem 0}
+.card{background:var(--su);border:1px solid var(--bo);border-radius:6px;padding:.8rem 1rem}
+.card .k{font-size:.82rem;color:var(--t2);margin:0}.card .v{font-size:1.3rem;font-weight:700;margin:.2rem 0 0}
+.filt{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem;background:var(--su);padding:.8rem;border:1px solid var(--bo);border-radius:6px;margin:.8rem 0}
+.badge{display:inline-block;padding:.12rem .45rem;border-radius:4px;font-size:.8rem;font-weight:700;border:1px solid var(--bo)}
+.chk-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.4rem;margin:.4rem 0}
+.chk-item{display:flex;align-items:center;gap:.5rem;background:var(--su);border:1px solid var(--bo);padding:.45rem .65rem;border-radius:6px;font-weight:400;cursor:pointer}
+.chk-item input{width:auto;min-height:auto}
+@media(max-width:420px){.slip dl{grid-template-columns:1fr;gap:.15rem}.slip dt{margin-top:.4rem}}
+</style></head><body>
+<header><h2>SGE-Oikos · Edificio Oikos Panoramic Tunja</h2>
+<p>Prototipo funcional v0.2 (P-01 a P-07) · simulación con datos ficticios; todo se reinicia al recargar. No es el sistema (SRS-OIKOS-001, LB-0.8).</p>
+<div class="sim">
+<label>Rol simulado
+<select id="rol">
+<option value="res603">Propietario residente (Apto. 603)</option>
+<option value="res401">Propietario residente (Apto. 401)</option>
+<option value="cons">Constructora (13 unidades)</option>
+<option value="adm">Administradora (Liliana Buitrago)</option>
+<option value="cont">Contadora</option>
+</select>
+</label>
+<label>Reloj simulado<input type="datetime-local" id="reloj" value="2026-11-23T09:30"></label>
+<label>Casos de fecha rápidos
+<select id="caso">
+<option value="">Elegir escenario…</option>
+<option value="2026-11-08T14:00">Día 8 del mes (sin recargo $15.000 · RN-06)</option>
+<option value="2026-11-11T08:00">Día 11 del mes (aplica recargo $15.000 · RN-06)</option>
+<option value="2026-11-23T09:30">Lunes normal (PQRS 5 días hábiles)</option>
+<option value="2026-11-27T16:45">Viernes tarde (reclamo, 2 días hábiles)</option>
+<option value="2026-12-05T10:00">Sábado con festivo 8/12 (Inmaculada)</option>
+<option value="2026-12-24T11:00">Víspera de Navidad (25/12 festivo)</option>
+</select>
+</label>
+</div></header>
+<nav id="nav" aria-label="Pantallas SRS"></nav>
+<main id="main" tabindex="-1"></main>
+<script>
+/* Catálogo de reglas y parámetros (Apéndice E · CR-01, SRS-OIKOS-001 LB-0.8) */
+const PLAZ={"PQRS general":5,"Reclamo sobre un recibo":2},VIGH="2027-01-31",RECARGO_FIJO=15000,TOTAL_UNIDADES=180;
+const FEST={"2026-11-02":"Todos los Santos","2026-11-16":"Independencia de Cartagena","2026-12-08":"Inmaculada Concepción","2026-12-25":"Navidad","2027-01-01":"Año Nuevo","2027-01-11":"Reyes Magos"};
+const NORM={N1:v=>v.trim().replace(/[ \t]+/g," "),N2:v=>v.trim().toLowerCase(),N3:v=>v.toUpperCase().replace(/\s/g,""),N4:v=>v.replace(/[\s$.]/g,"")};
+const obl=m=>({id:"R1",t:"obl",m,inv:[""]});
+
+/* Unidades representativas (180 unidades totales: 167 propietarios + 13 constructora · D4) */
+const UNIDADES=[
+  {u:"102",pagador:"Propietario",nombre:"Carlos Méndez",coef:0.5096},
+  {u:"210",pagador:"Propietario",nombre:"Ana María Ruiz",coef:0.5385},
+  {u:"401",pagador:"Propietario",nombre:"Jorge E. Torres",coef:0.5385},
+  {u:"603",pagador:"Propietario",nombre:"Laura P. Gómez",coef:0.5962},
+  {u:"901",pagador:"Constructora",nombre:"Constructora Oikos (U1)",coef:0.5962},
+  {u:"902",pagador:"Constructora",nombre:"Constructora Oikos (U2)",coef:0.5962},
+  {u:"903",pagador:"Constructora",nombre:"Constructora Oikos (U3)",coef:0.5962}
+];
+const UNIDADES_CONS=["901","902","903"];
+
+/* Definición declarativa de campos: P-01 y P-04 */
+const P01=[
+  {id:"unidad",e:"Unidad (apartamento)",k:"text",a:"Tres dígitos (101–913). Constructora: 901–913 (D2, RF-007.1).",n:["N1"],rol:["adm","cons"],r:[obl("Ingrese el número de la unidad."),{id:"R2",t:"pat",p:"^[1-9]\\d{2}$",m:"La unidad debe tener 3 dígitos, por ejemplo 603.",inv:["60","0603","6o3"]}],v:["603","401"],nm:[[" 603 ","603"]]},
+  {id:"canal",e:"Canal por el que llegó la solicitud",k:"sel",op:["WhatsApp","Correo","Portería"],a:"Registro asistido a nombre del residente (D2 · RF-007.1).",rol:["adm"],r:[obl("Elija el canal de origen.")],v:["WhatsApp"]},
+  {id:"cat",e:"Categoría",k:"sel",op:Object.keys(PLAZ),r:[obl("Elija la categoría.")],v:["PQRS general"]},
+  {id:"periodo",e:"Periodo reclamado (AAAA-MM)",k:"text",a:"Por ejemplo 2026-10.",n:["N1"],si:["cat","Reclamo sobre un recibo"],r:[obl("Indique el periodo del recibo reclamado."),{id:"R2",t:"pat",p:"^\\d{4}-(0[1-9]|1[0-2])$",m:"Escriba el periodo como AAAA-MM, por ejemplo 2026-10.",inv:["2026-13","26-10","octubre"]}],v:["2026-10"]},
+  {id:"desc",e:"Descripción",k:"area",a:"Entre 10 y 500 caracteres.",n:["N1"],r:[obl("Ingrese la descripción."),{id:"R2",t:"lon",min:10,max:500,m:"La descripción debe tener entre 10 y 500 caracteres (tiene {n}).",inv:["corta","x".repeat(501)]}],v:["El ascensor de la torre hace ruido desde el lunes."],nm:[["  Hola   mundo  ","Hola mundo"]]},
+  {id:"correo",e:"Correo para la confirmación",k:"text",a:"Allí llega el radicado único (RF-001.2).",n:["N2"],r:[obl("Ingrese su correo electrónico."),{id:"R2",t:"pat",p:"^[a-z0-9._%+\\-]+@[a-z0-9\\-]+(?:\\.[a-z0-9\\-]+)*\\.[a-z]{2,}$",m:"El correo electrónico no es válido.",inv:["a@b","juan.perez","juan@correo"]}],v:["liliana@oikos.co"],nm:[["  JUAN@Correo.COM ","juan@correo.com"]]}
+];
+
+const P04=[
+  {id:"recibo",e:"Recibo con saldo",k:"sel",op:"rec",r:[obl("Elija el recibo al que se aplica el pago.")],v:["RC-2026-11-401"]},
+  {id:"referencia",e:"Referencia bancaria única",k:"text",a:"De 6 a 20 caracteres: letras, números o guion. Debe ser única (GLO-09, RN-09, RF-031.1).",n:["N3"],r:[obl("Ingrese la referencia bancaria."),{id:"R2",t:"pat",p:"^[A-Z0-9-]{6,20}$",m:"La referencia debe tener de 6 a 20 caracteres: letras, números o guion.",inv:["ab","TRX#8839201"]},{id:"R3",t:"uni",m:"La referencia bancaria ya está registrada: pago {o} (RN-09)."}],v:["TRX-7710022"],nm:[[" trx-883 9201 ","TRX-8839201"]]},
+  {id:"valor",e:"Valor pagado (COP)",k:"text",a:"Entero mayor que cero. Se imputa primero al recargo y luego a la cuota (RF-031.2).",n:["N4"],r:[obl("Ingrese el valor pagado."),{id:"R2",t:"pat",p:"^[1-9]\\d{0,8}$",m:"El valor debe ser un número entero mayor que cero.",inv:["0","-5","12,5","abc"]},{id:"R3",t:"max",m:"El valor supera el saldo del recibo ({s})."}],v:["280000"],nm:[["$ 295.000","295000"]]},
+  {id:"fecha",e:"Fecha del pago",k:"date",r:[obl("Ingrese la fecha del pago."),{id:"R2",t:"fut",m:"La fecha del pago no puede ser posterior a hoy ({h}).",inv:["2026-11-24"]}],v:["2026-11-23","2026-11-20"]},
+  {id:"medio",e:"Medio de pago",k:"sel",op:["Transferencia","Consignación","Efectivo"],r:[obl("Elija el medio de pago.")],v:["Transferencia"]},
+  {id:"soporte",e:"Soporte del pago",k:"file",a:"PDF, JPG, JPEG o PNG.",n:["N2"],r:[obl("Adjunte el soporte del pago."),{id:"R2",t:"pat",p:"^.+\\.(pdf|jpe?g|png)$",m:"El soporte debe ser un archivo PDF, JPG o PNG.",inv:["foto.heic","soporte"]}],v:["comprobante.pdf","Foto.JPEG"]}
+];
+
+/* Calendario en UTC (GLO-16 · Día hábil) */
+const sd=(i,n)=>new Date(Date.parse(i+"T00:00:00Z")+n*864e5).toISOString().slice(0,10),dw=i=>new Date(i+"T00:00:00Z").getUTCDay(),habil=i=>dw(i)%6!==0&&!FEST[i];
+function lim(rad,n){let x=rad,f=[];for(let k=0;k<n;k++){let y=sd(x,1);while(!habil(y)){if(FEST[y])f.push(y);y=sd(y,1)}x=y}return x>VIGH||rad>VIGH?{fuera:true,f}:{fecha:x,f}}
+const DS=["dom","lun","mar","mié","jue","vie","sáb"],fF=i=>`${DS[dw(i)]} ${i.slice(8)}/${i.slice(5,7)}/${i.slice(0,4)}`;
+const $f=n=>"$"+Number(n).toLocaleString("es-CO");
+
+/* Cálculo dinámico de recargo (RN-06 / RF-021.1): $15.000 si saldo > 0 tras 24:00 del día 10 */
+function recEfectivo(q,h){
+  const limiteDia10=q.periodo+"-10";
+  if(q.pagadoAntes10)return 0;
+  return h>limiteDia10?RECARGO_FIJO:0;
+}
+const saldo=(q,h=hoy())=>Math.max(0,q.cuota+recEfectivo(q,h)-q.ap);
+const est=(q,h=hoy())=>saldo(q,h)===0?"Pagado":q.ap>0?"Parcialmente pagado":recEfectivo(q,h)>0?"Con recargo":"Vigente";
+
+/* Estado en memoria (sin localStorage) */
+function nuevo(){
+  const L1=lim("2026-11-18",5),L2=lim("2026-11-20",2),L3=lim("2026-11-12",5);
+  return{
+    sol:[
+      {id:"PQRS-2026-11-0001",cat:"PQRS general",u:"603",pagador:"Propietario",canal:"Canal único",desc:"Solicitud de revisión de citófono en apartamento 603.",fecha:"2026-11-18T10:15",plazo:5,lim:L1.fecha,fuera:L1.fuera,fest:L1.f,correo:"laura.603@oikos.co",estado:"Radicada"},
+      {id:"PQRS-2026-11-0002",cat:"Reclamo sobre un recibo",u:"401",pagador:"Propietario",canal:"WhatsApp",desc:"Consulta sobre aplicación de recargo extemporáneo en periodo 2026-10.",fecha:"2026-11-20T15:40",plazo:2,lim:L2.fecha,fuera:L2.fuera,fest:L2.f,correo:"jorge.401@oikos.co",estado:"En trámite"},
+      {id:"PQRS-2026-11-0003",cat:"PQRS general",u:"901",pagador:"Constructora",canal:"Canal único",desc:"Entrega de paz y salvo de unidades pendientes por escriturar.",fecha:"2026-11-12T09:00",plazo:5,lim:L3.fecha,fuera:L3.fuera,fest:L3.f,correo:"cartera@constructora-oikos.co",estado:"Radicada"}
+    ],
+    cons:{"2026-11":3},
+    ult:null,
+    msg:"",
+    periodoActual:"2026-11",
+    presupuesto:52000000,
+    sumaCoef:100.00,
+    cierres:{"2026-10":true,"2026-11":false},
+    acuerdos:[
+      {id:"AC-2026-01",u:"102",pagador:"Propietario",total:560000,cuotas:4,valorCuota:140000,pagadas:1,fecha:"2026-11-02",estado:"Vigente"}
+    ],
+    bit:[
+      {t:"2026-11-05 14:20",u:"Contadora",op:"Pago registrado",d:"PG-0001 · RC-2026-11-210 · $295.000 (Ref: TRX-8839201)"}
+    ],
+    pagos:[
+      {id:"PG-0001",recId:"RC-2026-11-210",u:"210",pagador:"Propietario",ref:"TRX-8839201",val:295000,fecha:"2026-11-05",medio:"Transferencia",consolidado:false}
+    ],
+    rec:[
+      {id:"RC-2026-11-401",periodo:"2026-11",u:"401",pagador:"Propietario",cuota:280000,ap:0,pagadoAntes10:false},
+      {id:"RC-2026-11-603",periodo:"2026-11",u:"603",pagador:"Propietario",cuota:310000,ap:0,pagadoAntes10:false},
+      {id:"RC-2026-11-102",periodo:"2026-11",u:"102",pagador:"Propietario",cuota:265000,ap:0,pagadoAntes10:false},
+      {id:"RC-2026-11-210",periodo:"2026-11",u:"210",pagador:"Propietario",cuota:280000,ap:295000,pagadoAntes10:false},
+      {id:"RC-2026-11-901",periodo:"2026-11",u:"901",pagador:"Constructora",cuota:310000,ap:0,pagadoAntes10:false},
+      {id:"RC-2026-11-902",periodo:"2026-11",u:"902",pagador:"Constructora",cuota:310000,ap:0,pagadoAntes10:false},
+      {id:"RC-2026-11-903",periodo:"2026-11",u:"903",pagador:"Constructora",cuota:310000,ap:0,pagadoAntes10:false}
+    ]
+  };
+}
+
+let S=nuevo(),RELOJ="2026-11-23T09:30",ROL="res603";
+const hoy=()=>RELOJ.slice(0,10);
+const NR={res603:"Residente (Apto. 603)",res401:"Residente (Apto. 401)",cons:"Constructora",adm:"Administradora",cont:"Contadora"};
+const esResidente=r=>r==="res603"||r==="res401";
+const unidadDeRol=r=>r==="res603"?"603":r==="res401"?"401":null;
+const log=(op,d)=>S.bit.unshift({t:RELOJ.replace("T"," "),u:NR[ROL],op,d});
+
+/* Aislamiento de datos por rol (RNF-003.1 · 0 accesos cruzados) */
+function filtrarPorRol(lista,rol=ROL){
+  if(rol==="adm"||rol==="cont")return lista;
+  if(esResidente(rol)){const u=unidadDeRol(rol);return lista.filter(x=>x.u===u)}
+  if(rol==="cons")return lista.filter(x=>UNIDADES_CONS.includes(x.u)||x.pagador==="Constructora");
+  return[];
+}
+
+/* Motor de reglas declarativo */
+function ok(r,v,x){
+  switch(r.t){
+    case"obl":return v!=="";
+    case"lon":{const n=[...v].length;return n>=r.min&&n<=r.max}
+    case"pat":return new RegExp(r.p).test(v);
+    case"fut":return v<=x.hoy;
+    case"uni":return!S.pagos.some(p=>p.ref===v);
+    case"max":{const q=S.rec.find(y=>y.id===x.vals.recibo);return!q||+v<=saldo(q,x.hoy)}
+  }
+  return true;
+}
+function msg(r,v,x){
+  const q=S.rec.find(y=>y.id===(x.vals||{}).recibo),o=S.pagos.find(p=>p.ref===v);
+  return r.m.replace("{n}",[...v].length).replace("{h}",x.hoy).replace("{s}",q?$f(saldo(q,x.hoy)):"").replace("{o}",o?`${o.id} del ${o.fecha} por ${$f(o.val)}`:"");
+}
+const norm=(c,v)=>(c.n||[]).reduce((a,n)=>NORM[n](a),v),falla=(c,v,x)=>c.r.find(r=>!(v===""&&r.t!=="obl")&&!ok(r,v,x))||null;
+const vis=(c,vals,rol)=>(!c.rol||c.rol.includes(rol))&&(!c.si||vals[c.si[0]]===c.si[1]);
+
+function validar(F,vals,x,rol){
+  const e={};x.vals=vals;
+  for(const c of F){
+    if(!vis(c,vals,rol))continue;
+    vals[c.id]=norm(c,vals[c.id]||"");
+    const r=falla(c,vals[c.id],x);
+    if(r)e[c.id]=msg(r,vals[c.id],x);
+  }
+  return e;
+}
+
+/* Caso de uso P-01: Radicar solicitud (RF-001.1, RF-001.2, RF-007.1, RN-03) */
+function radicar(v,rol){
+  const e=validar(P01,v,{hoy:hoy()},rol);
+  if(Object.keys(e).length)return{e};
+  const ym=hoy().slice(0,7),n=(S.cons[ym]||0)+1;S.cons[ym]=n;
+  const L=lim(hoy(),PLAZ[v.cat]);
+  const uFinal=esResidente(rol)?unidadDeRol(rol):v.unidad;
+  const pag=UNIDADES_CONS.includes(uFinal)||rol==="cons"?"Constructora":"Propietario";
+  const s={
+    id:`PQRS-${ym}-${String(n).padStart(4,"0")}`,
+    cat:v.cat,u:uFinal,pagador:pag,
+    canal:rol==="adm"?v.canal:"Canal único",
+    desc:v.desc,fecha:RELOJ,plazo:PLAZ[v.cat],
+    lim:L.fecha,fuera:L.fuera,fest:L.f,correo:v.correo,estado:"Radicada"
+  };
+  S.sol.unshift(s);S.ult=s;
+  log("Solicitud radicada (RF-001.1)",`${s.id} · Apto. ${s.u} (${s.canal})`);
+  return{s};
+}
+
+/* Caso de uso P-04: Registrar pago individual (RF-031.1, RF-031.2, RN-08, RN-09) */
+function pagar(v,h,rol=ROL){
+  const e=validar(P04,v,{hoy:h},rol);
+  if(Object.keys(e).length){
+    log("Pago rechazado (RN-09/Validación)",Object.keys(e).length+" error(es): "+Object.keys(e).join(", "));
+    return{e};
+  }
+  const q=S.rec.find(y=>y.id===v.recibo);
+  const valNum=+v.valor;
+  if(h<=q.periodo+"-10"&&q.ap+valNum>=q.cuota)q.pagadoAntes10=true;
+  q.ap+=valNum;
+  const cerrado=!!S.cierres[q.periodo];
+  const notaCierre=cerrado?" · Imputado a periodo siguiente por cierre contable (RN-08)":"";
+  const p={id:"PG-"+String(S.pagos.length+1).padStart(4,"0"),recId:q.id,u:q.u,pagador:q.pagador,ref:v.referencia,val:valNum,fecha:v.fecha,medio:v.medio,consolidado:false,notaCierre};
+  S.pagos.push(p);
+  log("Pago registrado (RF-031.1)",`${p.id} · ${q.id} · ${$f(p.val)} · Ref: ${p.ref}${notaCierre}`);
+  return{p,q,cerrado};
+}
+
+/* Caso de uso P-04b: Pago consolidado Constructora (RF-031.3, RN-09) */
+function pagarConsolidado(refRaw,fecha,medio,recIds,h){
+  const ref=NORM.N3(refRaw||"");
+  const errs=[];
+  if(!/^[A-Z0-9-]{6,20}$/.test(ref))errs.push("La referencia debe tener de 6 a 20 caracteres alfanuméricos o guion.");
+  if(S.pagos.some(p=>p.ref===ref&&!p.consolidado))errs.push("La referencia ya pertenece a un pago individual y no puede reutilizarse (RN-09).");
+  if(!fecha||fecha>h)errs.push(`La fecha no puede ser posterior a hoy (${h}).`);
+  if(!recIds.length)errs.push("Seleccione al menos una unidad de la Constructora con saldo pendiente.");
+  if(errs.length){
+    log("Pago consolidado rechazado",errs.join(" "));
+    return{errs};
+  }
+  let total=0;const aplicados=[];
+  for(const rid of recIds){
+    const q=S.rec.find(y=>y.id===rid);
+    if(!q)continue;
+    const sal=saldo(q,h);
+    if(sal<=0)continue;
+    if(h<=q.periodo+"-10")q.pagadoAntes10=true;
+    q.ap+=sal;total+=sal;
+    const p={id:"PG-"+String(S.pagos.length+1).padStart(4,"0"),recId:q.id,u:q.u,pagador:"Constructora",ref,val:sal,fecha,medio,consolidado:true};
+    S.pagos.push(p);aplicados.push(q.u);
+  }
+  log("Pago consolidado Constructora (RF-031.3)",`Ref: ${ref} · ${aplicados.length} unidades (${aplicados.join(", ")}) · Total ${$f(total)}`);
+  return{ref,total,aplicados};
+}
+
+/* Condición SLA en días hábiles (RF-040.1 / D10) */
+function cond(s,h){
+  if(s.estado==="Respondida")return["Respondida","✔"];
+  if(s.fuera)return["Sin calcular","–"];
+  if(h>s.lim)return["Vencida","✖"];
+  let t=0,d=s.fecha.slice(0,10);
+  while(d<h){d=sd(d,1);if(habil(d))t++}
+  return t>=Math.ceil(.8*s.plazo)?["Por vencer","▲"]:["En plazo","●"];
+}
+
+/* Autoprueba integral (v0.1 + casos LB-0.8) */
+function auto(){
+  const R=[],add=(g,c,e,o)=>R.push([g,c,e,o,e===o]),bak=S;
+  S=nuevo();const x={hoy:"2026-11-23",vals:{}};
+  for(const[fn,F]of[["P-01",P01],["P-04",P04]])for(const c of F){
+    const g=fn+" "+c.id;
+    for(const r of c.r){
+      if(r.t==="uni"||r.t==="max")continue;
+      for(const e of r.inv||[]){const f=falla(c,norm(c,e),x);add(g,`inválido «${e.slice(0,22)}»`,r.id,f?f.id:"pasa")}
+    }
+    for(const e of c.v||[]){const f=falla(c,norm(c,e),x);add(g,`válido «${e}»`,"pasa",f?f.id:"pasa")}
+    for(const[e,s]of c.nm||[])add(g,`normaliza «${e}»`,s,norm(c,e));
+  }
+  for(const[r,n,e]of[["2026-11-23",5,"2026-11-30"],["2026-11-27",2,"2026-12-01"],["2026-12-05",5,"2026-12-14"],["2026-12-24",2,"2026-12-29"]]){
+    add("Fecha límite (RF-040.1)",`${fF(r)} + ${n} días hábiles`,e,lim(r,n).fecha);
+  }
+  const pv=(o={})=>Object.assign({recibo:"RC-2026-11-401",referencia:"TRX-1000001",valor:"100000",fecha:"2026-11-23",medio:"Transferencia",soporte:"a.pdf"},o);
+  add("Pago (RN-09)","referencia individual duplicada",true,!!pagar(pv({referencia:"TRX-8839201"}),"2026-11-23","cont").e?.referencia);
+  add("Pago (RF-031.1)","valor mayor al saldo",true,!!pagar(pv({valor:"300000"}),"2026-11-23","cont").e?.valor);
+  add("Pago (RF-031.2)","abono: saldo y estado","195000 Parcialmente pagado",(r=>saldo(r.q,"2026-11-23")+" "+est(r.q,"2026-11-23"))(pagar(pv(),"2026-11-23","cont")));
+  add("Pago (RF-031.2)","pago del saldo: estado","0 Pagado",(r=>saldo(r.q,"2026-11-23")+" "+est(r.q,"2026-11-23"))(pagar(pv({referencia:"TRX-1000002",valor:"195000"}),"2026-11-23","cont")));
+
+  /* Nuevas verificaciones LB-0.8 */
+  const pc=pagarConsolidado("CONS-2026-99","2026-11-23","Transferencia",["RC-2026-11-901","RC-2026-11-902"],"2026-11-23");
+  add("Constructora (RF-031.3)","pago consolidado 2 unidades con misma referencia",2,pc.aplicados?pc.aplicados.length:0);
+
+  const qTest={id:"RC-TEST",periodo:"2026-11",u:"603",cuota:310000,ap:0,pagadoAntes10:false};
+  add("Recargo (RN-06)","día 8 del mes -> $0",0,recEfectivo(qTest,"2026-11-08"));
+  add("Recargo (RN-06)","día 11 del mes -> $15.000",15000,recEfectivo(qTest,"2026-11-11"));
+
+  S=nuevo();
+  const a=radicar({cat:"PQRS general",desc:"Prueba de radicado uno",correo:"a@oikos.co"},"res603");
+  const b=radicar({cat:"PQRS general",desc:"Prueba de radicado dos",correo:"a@oikos.co"},"res603");
+  add("Radicado (RN-03)","formato consecutivo PQRS-AAAA-MM-NNNN",`PQRS-${hoy().slice(0,7)}-0004 PQRS-${hoy().slice(0,7)}-0005`,a.s.id+" "+b.s.id);
+
+  const vis603=filtrarPorRol(S.sol,"res603").every(item=>item.u==="603");
+  add("Privacidad (RNF-003.1)","residente 603 ve 0 registros de otras unidades",true,vis603);
+
+  S=bak;
+  return R;
+}
+
+if(typeof document!=="undefined"){
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* Mapa de navegación completo P-01 a P-07 + Auditoría + Verificación */
+const NAV=[
+  ["p01","P-01 · Radicar PQRS",["res603","res401","cons","adm"]],
+  ["p02","P-02 · Consultar PQRS",["res603","res401","cons","adm"]],
+  ["p03","P-03 · Liquidación",["adm"]],
+  ["p04","P-04 · Recaudos",["adm","cont"]],
+  ["p05","P-05 · Conciliación y Siigo",["adm","cont"]],
+  ["p06","P-06 · Plazos SLA",["adm"]],
+  ["p07","P-07 · Cartera y acuerdos",["res603","res401","cons","adm"]],
+  ["bitacora","Bitácora (RNF-004.1)",["adm","cont"]],
+  ["autoprueba","Autoprueba",["res603","res401","cons","adm","cont"]]
+];
+
+function campo(c,p){
+  const id=p+"-"+c.id,d=`aria-describedby="${c.a?id+"-a ":""}${id}-e"`;let t;
+  if(c.k==="sel"){
+    const o=c.op==="rec"?S.rec.filter(q=>saldo(q,hoy())>0).map(q=>`${q.id} (Apto. ${q.u} · Saldo ${$f(saldo(q,hoy()))})`):c.op;
+    t=`<select id="${id}" name="${c.id}" ${d}><option value="">Elija…</option>${o.map(x=>{const val=c.op==="rec"?x.split(" ")[0]:x;return`<option value="${esc(val)}">${esc(x)}</option>`}).join("")}</select>`;
+  }else if(c.k==="area")t=`<textarea id="${id}" name="${c.id}" rows="3" ${d}></textarea>`;
+  else t=`<input id="${id}" name="${c.id}" type="${c.k==="file"?"file":c.k==="date"?"date":"text"}" autocomplete="off" ${d}>`;
+  return`<div class="c" data-c="${c.id}"><label for="${id}">${c.e}</label>${c.a?`<p class="ay" id="${id}-a">${c.a}</p>`:""}${t}<p class="er" id="${id}-e" aria-live="polite"></p></div>`;
+}
+const leer=(F,f)=>Object.fromEntries(F.map(c=>{const el=f.elements[c.id];return[c.id,!el?"":c.k==="file"?(el.files[0]?el.files[0].name:""):el.value]}));
+function ver(F,f){const v=leer(F,f);for(const c of F){const w=f.querySelector(`[data-c="${c.id}"]`),on=vis(c,v,ROL);w.hidden=!on;if(!on){const el=f.elements[c.id];if(c.k!=="file")el.value="";$("#"+f.id+"-"+c.id+"-e").textContent="";el.removeAttribute("aria-invalid")}}}
+function pintar(F,f,e,v){let n=0,p;for(const c of F){const el=f.elements[c.id],er=$("#"+f.id+"-"+c.id+"-e");if(e[c.id]){er.textContent=e[c.id];el.setAttribute("aria-invalid","true");n++;p=p||el}else{er.textContent="";el.removeAttribute("aria-invalid");if(c.k!=="file"&&vis(c,v,ROL))el.value=v[c.id]}}
+$("#"+f.id+"-res").textContent=n?`Hay ${n} campo(s) con errores.`:"";if(p)p.focus();return n}
+const form=(id,F,btn)=>`<form id="${id}" novalidate><p class="res" id="${id}-res" role="alert"></p>${F.map(c=>campo(c,id)).join("")}<button type="submit">${btn}</button></form>`;
+const tabla=(h,f)=>`<div class="w"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${f}</tbody></table></div>`;
+
+/* P-01: Radicar PQRS */
+function vP01(){
+  const m=$("#main");
+  const descRol=ROL==="adm"?"Registro asistido: puede radicar solicitudes recibidas por WhatsApp, correo o portería a nombre de cualquier unidad (D2 · RF-007.1)."
+    :ROL==="cons"?"Radicación como Constructora para cualquiera de sus 13 unidades no vendidas (ej. 901–913)."
+    :`Se radicará en el canal único oficial a nombre del Apto. ${unidadDeRol(ROL)} (D1 · RF-001.1).`;
+  m.innerHTML=`<h1 tabindex="-1">P-01 · Radicar solicitud (Canal único)</h1><p>${descRol}</p>${form("f1",P01,"Radicar solicitud")}<div id="const-box"></div>`;
+  const f=$("#f1");ver(P01,f);
+  if(ROL==="cons")f.elements["unidad"].value="901";
+  f.addEventListener("change",()=>ver(P01,f));
+  f.addEventListener("submit",ev=>{
+    ev.preventDefault();
+    const v=leer(P01,f),r=radicar(v,ROL);
+    if(r.e)pintar(P01,f,r.e,v);
+    else{
+      f.reset();ver(P01,f);
+      const s=r.s,c=cond(s,hoy()),cl=c[0]==="Vencida"?"res":c[0]==="Por vencer"?"av":"ok";
+      $("#const-box").innerHTML=`<div class="slip" role="status"><strong>✔ Solicitud radicada exitosamente (RF-001.1 / RN-03)</strong><dl><dt>Radicado único</dt><dd>${s.id}</dd><dt>Estado</dt><dd>${s.estado}</dd><dt>Unidad / Pagador</dt><dd>Apto. ${s.u} (${s.pagador})</dd><dt>Canal de origen</dt><dd>${s.canal}</dd><dt>Fecha límite SLA</dt><dd>${s.fuera?"Sin calcular":fF(s.lim)} (${s.plazo} días hábiles)</dd><dt>Condición hoy</dt><dd class="${cl}">${c[1]} ${c[0]}</dd></dl><p class="nota" style="margin:.6rem 0 0">Confirmación enviada a <strong>${esc(s.correo)}</strong> (RF-001.2). <a href="#p02">Ver en P-02 · Consultar PQRS</a></p></div>`;
+    }
+  });
+}
+
+/* P-02: Consultar y filtrar PQRS (D3, RNF-003.1) */
+function vP02(){
+  const m=$("#main");
+  const visibles=filtrarPorRol(S.sol,ROL);
+  const notaPriv=ROL==="adm"?"Vista global de administración: puede filtrar y responder cualquier solicitud."
+    :`Aislamiento de privacidad activo (RNF-003.1): solo se muestran registros autorizados para <strong>${NR[ROL]}</strong> (0 accesos cruzados).`;
+  m.innerHTML=`<h1 tabindex="-1">P-02 · Consulta y seguimiento de PQRS</h1><p>${notaPriv}</p>
+  <div class="filt">
+    <label>Categoría<select id="f-cat"><option value="">Todas</option>${Object.keys(PLAZ).map(k=>`<option>${k}</option>`).join("")}</select></label>
+    <label>Estado<select id="f-est"><option value="">Todos</option><option>Radicada</option><option>En trámite</option><option>Respondida</option></select></label>
+    <label>Buscar radicado o unidad<input id="f-txt" type="text" placeholder="Ej. 603 o 0001"></label>
+  </div>
+  <div id="p02-tabla"></div>`;
+
+  const render=()=>{
+    const fc=$("#f-cat").value,fe=$("#f-est").value,ft=$("#f-txt").value.trim().toLowerCase();
+    const fil=visibles.filter(s=>(!fc||s.cat===fc)&&(!fe||s.estado===fe)&&(!ft||s.id.toLowerCase().includes(ft)||s.u.includes(ft)||s.desc.toLowerCase().includes(ft)));
+    if(!fil.length){$("#p02-tabla").innerHTML=`<p class="nota">No hay solicitudes que coincidan con los filtros para este rol.</p>`;return}
+    const headers=["Radicado","Unidad","Categoría","Canal","Fecha límite","Plazo hoy","Estado"].concat(ROL==="adm"?["Acción"]:[]);
+    const rows=fil.map(s=>{
+      const c=cond(s,hoy()),cl=c[0]==="Vencida"?"res":c[0]==="Por vencer"?"av":"ok";
+      const btn=ROL==="adm"?`<td>${s.estado!=="Respondida"?`<button type="button" class="s sm" data-resp="${s.id}">Responder</button>`:"—"}</td>`:"";
+      return`<tr><td><strong>${s.id}</strong><br><span class="nota">${esc(s.desc.slice(0,55))}${s.desc.length>55?"…":""}</span></td><td>Apto. ${s.u}<br><span class="nota">${s.pagador}</span></td><td>${esc(s.cat)}</td><td>${s.canal}</td><td>${s.fuera?"Sin calcular":fF(s.lim)}</td><td class="${cl}">${c[1]} ${c[0]}</td><td><span class="badge">${s.estado}</span></td>${btn}</tr>`;
+    }).join("");
+    $("#p02-tabla").innerHTML=tabla(headers,rows);
+    if(ROL==="adm")document.querySelectorAll("[data-resp]").forEach(b=>b.addEventListener("click",()=>{
+      const item=S.sol.find(x=>x.id===b.dataset.resp);
+      if(item){item.estado="Respondida";log("PQRS respondida",`${item.id} · Apto. ${item.u}`);render()}
+    }));
+  };
+  ["f-cat","f-est","f-txt"].forEach(id=>$("#"+id).addEventListener("input",render));
+  render();
+}
+
+/* P-03: Liquidación mensual y validación de coeficientes al 100% (RF-012.1, RF-013.1, RN-01, RN-02, RN-06) */
+function vP03(){
+  const m=$("#main");
+  const hayRecargo=hoy()>(S.periodoActual+"-10");
+  m.innerHTML=`<h1 tabindex="-1">P-03 · Liquidación mensual y recibos</h1>
+  <p>Calcula la cuota por coeficiente de copropiedad (<code>Presupuesto × Coeficiente ÷ 100</code> · RN-01) diferenciando propietarios (167 uds.) y Constructora (13 uds. · D4). Bloquea la emisión si los coeficientes de las ${TOTAL_UNIDADES} unidades no suman <strong>100,00 %</strong> (RN-02 / RF-012.1).</p>
+  <div class="filt">
+    <label>Periodo a liquidar<input id="p3-per" type="text" value="${S.periodoActual}"></label>
+    <label>Presupuesto mensual (COP)<input id="p3-pre" type="number" value="${S.presupuesto}" step="100000"></label>
+    <label>Suma coeficientes 180 uds. (%)<input id="p3-coef" type="number" value="${S.sumaCoef.toFixed(2)}" step="0.05"></label>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0">
+    <button type="button" id="p3-emitir">Validar 100 % y emitir recibos (RF-013.1)</button>
+    <button type="button" class="s" id="p3-sim-err">Simular error coeficientes (99,85 %)</button>
+    <button type="button" class="s" id="p3-sim-ok">Restaurar 100,00 %</button>
+  </div>
+  <div id="p3-msg" role="status"></div>
+  <h2>Vista previa / Recibos del periodo ${S.periodoActual}</h2>
+  <p class="nota">Regla RN-06 activa según reloj simulado (${fF(hoy())}): ${hayRecargo?'<span class="res">Posterior al día 10 → aplica recargo fijo de $15.000 COP a saldos pendientes.</span>':'<span class="ok">Hasta el día 10 → recargo $0 COP.</span>'}</p>
+  <div id="p3-tabla"></div>`;
+
+  const renderTabla=()=>{
+    const pres=Number($("#p3-pre").value)||0;
+    const rows=UNIDADES.map(u=>{
+      const cuotaCalc=Math.round((pres*u.coef)/100);
+      const existente=S.rec.find(r=>r.u===u.u&&r.periodo===S.periodoActual);
+      const cuotaMostrar=existente?existente.cuota:cuotaCalc;
+      const rec=existente?recEfectivo(existente,hoy()):(hayRecargo?RECARGO_FIJO:0);
+      return`<tr><td><strong>Apto. ${u.u}</strong></td><td>${u.pagador}</td><td>${esc(u.nombre)}</td><td>${u.coef.toFixed(4)} %</td><td>${$f(cuotaMostrar)}</td><td>${$f(rec)}</td><td><strong>${$f(cuotaMostrar+rec)}</strong></td></tr>`;
+    }).join("");
+    $("#p3-tabla").innerHTML=tabla(["Unidad","Responsable pago","Titular","Coeficiente","Cuota base (RN-01)","Recargo (RN-06)","Total recibo"],rows);
+  };
+
+  $("#p3-sim-err").addEventListener("click",()=>{$("#p3-coef").value="99.85";$("#p3-msg").innerHTML=""});
+  $("#p3-sim-ok").addEventListener("click",()=>{$("#p3-coef").value="100.00";$("#p3-msg").innerHTML=""});
+  $("#p3-pre").addEventListener("input",renderTabla);
+
+  $("#p3-emitir").addEventListener("click",()=>{
+    const coef=Number($("#p3-coef").value);
+    const pres=Number($("#p3-pre").value);
+    const per=$("#p3-per").value.trim();
+    if(Math.abs(coef-100)>0.0001){
+      log("Liquidación bloqueada (RN-02)",`Suma de coeficientes inválida: ${coef.toFixed(2)}% != 100.00%`);
+      $("#p3-msg").innerHTML=`<p class="res">✖ Bloqueado por RN-02 (RF-012.1): La suma de coeficientes de las ${TOTAL_UNIDADES} unidades es ${coef.toFixed(2)} %. Debe ser exactamente 100,00 % antes de emitir recibos.</p>`;
+      return;
+    }
+    if(pres<=0){$("#p3-msg").innerHTML=`<p class="res">✖ El presupuesto mensual debe ser mayor a $0 COP.</p>`;return}
+    S.presupuesto=pres;S.sumaCoef=coef;S.periodoActual=per;
+    let emitidos=0;
+    for(const u of UNIDADES){
+      const cuota=Math.round((pres*u.coef)/100);
+      let r=S.rec.find(x=>x.u===u.u&&x.periodo===per);
+      if(r){r.cuota=cuota}
+      else{S.rec.push({id:`RC-${per}-${u.u}`,periodo:per,u:u.u,pagador:u.pagador,cuota,ap:0,pagadoAntes10:false})}
+      emitidos++;
+    }
+    log("Liquidación aprobada (RF-013.1)",`Periodo ${per} · Presupuesto ${$f(pres)} · Coeficientes 100,00% · ${emitidos} recibos muestra (${TOTAL_UNIDADES} edificio)`);
+    $("#p3-msg").innerHTML=`<p class="ok">✔ Validación RN-02 aprobada (100,00 %). Liquidación ejecutada para el periodo ${per} con presupuesto de ${$f(pres)} (167 propietarios + 13 Constructora).</p>`;
+    renderTabla();
+  });
+  renderTabla();
+}
+
+/* P-04: Registro de recaudos individuales y pago consolidado Constructora (RF-031.1, RF-031.2, RF-031.3, RN-09) */
+function vP04(){
+  const m=$("#main"),ms=S.msg;S.msg="";
+  const recCons=S.rec.filter(q=>q.pagador==="Constructora"&&saldo(q,hoy())>0);
+  m.innerHTML=`<h1 tabindex="-1">P-04 · Registro de recaudos</h1>${ms?`<p class="ok" role="status">${ms}</p>`:""}
+  <p>Valida que cada <strong>Referencia bancaria</strong> sea única (RN-09 / RF-031.1), imputa abonos primero a recargo y luego a cuota (RF-031.2), y permite distribuir el pago consolidado de la Constructora (RF-031.3).</p>
+  <h2>1. Pago individual por unidad</h2>
+  ${form("f4",P04,"Registrar pago individual")}
+  <h2>2. Pago consolidado Constructora (RF-031.3 · Excepción RN-09)</h2>
+  <div class="card">
+    <p class="ay">Permite aplicar una misma referencia bancaria consolidada a múltiples unidades de la Constructora sin rechazo por duplicidad.</p>
+    <p class="res" id="fc-err" role="alert"></p>
+    <div class="filt" style="margin:.4rem 0">
+      <label>Referencia bancaria consolidada<input id="fc-ref" type="text" value="CONS-2026-1101"></label>
+      <label>Fecha del pago<input id="fc-fec" type="date" value="${hoy()}"></label>
+      <label>Medio<select id="fc-med"><option>Transferencia</option><option>Consignación</option></select></label>
+    </div>
+    <label>Unidades de Constructora con saldo pendiente:</label>
+    <div class="chk-list" id="fc-uds">
+      ${recCons.length?recCons.map(q=>`<label class="chk-item"><input type="checkbox" value="${q.id}" checked> Apto. ${q.u} (${q.id} · ${$f(saldo(q,hoy()))})</label>`).join(""):'<span class="nota">Todas las unidades de la Constructora están al día.</span>'}
+    </div>
+    ${recCons.length?`<button type="button" id="fc-btn" style="margin-top:.5rem">Registrar pago consolidado Constructora</button>`:""}
+  </div>
+  <h2>Estado de recibos · Periodo ${S.periodoActual}</h2>
+  ${tabla(["Recibo","Unidad","Pagador","Cuota","Recargo (RN-06)","Aplicado","Saldo","Estado"],S.rec.map(q=>`<tr><td>${q.id}</td><td>Apto. ${q.u}</td><td>${q.pagador}</td><td>${$f(q.cuota)}</td><td>${$f(recEfectivo(q,hoy()))}</td><td>${$f(q.ap)}</td><td><strong>${$f(saldo(q,hoy()))}</strong></td><td>${est(q,hoy())}</td></tr>`).join(""))}
+  <p class="nota">Referencia ya registrada para probar rechazo por duplicado (RN-09): <code>TRX-8839201</code>.</p>`;
+
+  const f=$("#f4");
+  f.addEventListener("submit",ev=>{
+    ev.preventDefault();
+    const v=leer(P04,f),r=pagar(v,hoy(),ROL);
+    if(r.e)pintar(P04,f,r.e,v);
+    else{
+      S.msg=`✔ Pago ${r.p.id} registrado (${r.p.ref}). Recibo ${r.q.id}: saldo ${$f(saldo(r.q,hoy()))}, estado ${est(r.q,hoy())}.${r.cerrado?" Nota RN-08: Periodo cerrado, movimiento imputado al siguiente periodo abierto.":""}`;
+      vP04();$("#main h1").focus();
+    }
+  });
+
+  const btnCons=$("#fc-btn");
+  if(btnCons)btnCons.addEventListener("click",()=>{
+    const ids=[...document.querySelectorAll("#fc-uds input:checked")].map(i=>i.value);
+    const res=pagarConsolidado($("#fc-ref").value,$("#fc-fec").value,$("#fc-med").value,ids,hoy());
+    if(res.errs)$("#fc-err").textContent="✖ "+res.errs.join(" ");
+    else{
+      S.msg=`✔ Pago consolidado ${res.ref} aplicado a ${res.aplicados.length} unidades de Constructora (${res.aplicados.join(", ")}) por ${$f(res.total)} (RF-031.3).`;
+      vP04();$("#main h1").focus();
+    }
+  });
+}
+
+/* P-05: Conciliación, cierre contable y exportación Siigo (RF-037.1, RN-08, RN-12) */
+function vP05(){
+  const m=$("#main");
+  const cerrado=!!S.cierres[S.periodoActual];
+  const totEmitido=S.rec.reduce((a,q)=>a+q.cuota+recEfectivo(q,hoy()),0);
+  const totRecaudado=S.pagos.reduce((a,p)=>a+p.val,0);
+  const totPendiente=S.rec.reduce((a,q)=>a+saldo(q,hoy()),0);
+
+  m.innerHTML=`<h1 tabindex="-1">P-05 · Conciliación y exportación Siigo</h1>
+  <p>Concilia los pagos aprobados contra los recibos emitidos, ejecuta el cierre contable mensual (RN-08) y exporta el archivo de intercambio compatible con <strong>Siigo</strong> sin conexión API directa (RF-037.1 / RN-12).</p>
+  <div class="grid">
+    <div class="card"><p class="k">Total facturado (${S.periodoActual})</p><p class="v">${$f(totEmitido)}</p></div>
+    <div class="card"><p class="k">Recaudos conciliados (${S.pagos.length})</p><p class="v ok">${$f(totRecaudado)}</p></div>
+    <div class="card"><p class="k">Cartera pendiente</p><p class="v ${totPendiente>0?"av":"ok"}">${$f(totPendiente)}</p></div>
+    <div class="card"><p class="k">Estado periodo ${S.periodoActual}</p><p class="v ${cerrado?"res":"ok"}">${cerrado?"CERRADO (RN-08)":"ABIERTO"}</p></div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:.6rem;margin:.8rem 0">
+    <button type="button" id="p5-csv">⬇ Descargar CSV compatible con Siigo (RF-037.1)</button>
+    <button type="button" class="s" id="p5-cerrar" ${cerrado?"disabled":""}>${cerrado?"Periodo ya cerrado":"Ejecutar cierre contable mensual (RN-08)"}</button>
+  </div>
+  <div id="p5-msg" role="status"></div>
+  <h2>Vista previa del archivo de intercambio Siigo (${S.pagos.length} movimientos aprobados)</h2>
+  ${tabla(["ID Pago","Fecha","Unidad","Pagador","Referencia bancaria","Medio","Valor (COP)","Tipo"],S.pagos.map(p=>`<tr><td>${p.id}</td><td>${p.fecha}</td><td>Apto. ${p.u}</td><td>${p.pagador}</td><td><code>${p.ref}</code></td><td>${p.medio}</td><td>${$f(p.val)}</td><td>${p.consolidado?"Consolidado (RF-031.3)":"Individual"}</td></tr>`).join(""))}`;
+
+  $("#p5-cerrar").addEventListener("click",()=>{
+    S.cierres[S.periodoActual]=true;
+    log("Cierre contable ejecutado (RN-08)",`Periodo ${S.periodoActual} cerrado · Recaudado ${$f(totRecaudado)} · Pendiente ${$f(totPendiente)}`);
+    vP05();
+    $("#p5-msg").innerHTML=`<p class="ok">✔ Cierre contable del periodo ${S.periodoActual} registrado en bitácora (RN-08). Todo pago posterior se imputará al siguiente periodo abierto.</p>`;
+  });
+
+  $("#p5-csv").addEventListener("click",()=>{
+    const enc=["Comprobante_Siigo","Fecha","Cuenta_Contable","NIT_Pagador","Unidad","Referencia_Bancaria","Medio_Pago","Descripcion","Debito_Banco","Credito_Cartera"];
+    const lineas=S.pagos.map(p=>{
+      const nit=p.pagador==="Constructora"?"900812345-1":`1049600${p.u}`;
+      return["RC-OIKOS",p.fecha,"11100501",nit,`APTO-${p.u}`,p.ref,p.medio,`Recaudo cuota admon ${S.periodoActual} Apto ${p.u}`,p.val,p.val].join(";");
+    });
+    const csv="\uFEFF"+[enc.join(";"),...lineas].join("\r\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=`Siigo_Recaudos_Oikos_${S.periodoActual}.csv`;a.click();
+    URL.revokeObjectURL(url);
+    log("Exportación Siigo generada (RF-037.1)",`Archivo Siigo_Recaudos_Oikos_${S.periodoActual}.csv (${S.pagos.length} registros)`);
+    $("#p5-msg").innerHTML=`<p class="ok">✔ Archivo <strong>Siigo_Recaudos_Oikos_${S.periodoActual}.csv</strong> descargado y registrado en bitácora (RF-037.1 / RN-12).</p>`;
+  });
+}
+
+/* P-06: Control de plazos SLA y semáforo de alertas (RF-040.1, D10, GLO-16) */
+function vP06(){
+  const m=$("#main");
+  const activas=S.sol.filter(s=>s.estado!=="Respondida");
+  let enPlazo=0,porVencer=0,vencidas=0;
+  for(const s of activas){const c=cond(s,hoy())[0];if(c==="Vencida")vencidas++;else if(c==="Por vencer")porVencer++;else enPlazo++}
+  m.innerHTML=`<h1 tabindex="-1">P-06 · Plazos SLA y alertas (Días hábiles)</h1>
+  <p>Vigila el vencimiento de solicitudes calculado en <strong>días hábiles</strong> (lunes a viernes sin festivos parametrizados · GLO-16 / RF-040.1) respecto al reloj simulado (<strong>${fF(hoy())}</strong>).</p>
+  <div class="grid">
+    <div class="card"><p class="k">● En plazo (&lt; 80 % tiempo)</p><p class="v ok">${enPlazo}</p></div>
+    <div class="card"><p class="k">▲ Por vencer (&ge; 80 % tiempo)</p><p class="v av">${porVencer}</p></div>
+    <div class="card"><p class="k">✖ Vencidas</p><p class="v res">${vencidas}</p></div>
+  </div>
+  ${tabla(["Semáforo","Radicado","Unidad","Categoría","Radicada el","Límite SLA","Días hábiles","Estado"],S.sol.map(s=>{
+    const c=cond(s,hoy()),cl=c[0]==="Vencida"?"res":c[0]==="Por vencer"?"av":"ok";
+    return`<tr><td class="${cl}">${c[1]} ${c[0]}</td><td><strong>${s.id}</strong></td><td>Apto. ${s.u}</td><td>${esc(s.cat)}</td><td>${fF(s.fecha.slice(0,10))}</td><td>${s.fuera?"Sin calcular":fF(s.lim)}</td><td>${s.plazo} d.h.</td><td>${s.estado}</td></tr>`;
+  }).join(""))}
+  <p class="nota">Pruebe cambiar el «Reloj simulado» arriba a fechas posteriores (ej. 05/12/2026 o 24/12/2026) para observar la transición automática del semáforo SLA.</p>`;
+}
+
+/* P-07: Cartera histórica y acuerdos de pago hasta 4 meses (D11, D12, RNF-003.1) */
+function vP07(){
+  const m=$("#main");
+  const recs=filtrarPorRol(S.rec,ROL);
+  const acuerdos=filtrarPorRol(S.acuerdos,ROL);
+  const unidadesDisp=ROL==="adm"?UNIDADES.map(x=>x.u):ROL==="cons"?UNIDADES_CONS:[unidadDeRol(ROL)];
+  const deudaTotal=recs.reduce((a,q)=>a+saldo(q,hoy()),0);
+
+  m.innerHTML=`<h1 tabindex="-1">P-07 · Cartera y acuerdos de pago</h1>
+  <p>Consulta el estado de cuenta histórico por unidad privada (D11) y gestiona acuerdos de pago diferidos a <strong>máximo 4 meses</strong> (D12). ${ROL!=="adm"?"Aislamiento por rol activo (RNF-003.1).":""}</p>
+  <div class="grid">
+    <div class="card"><p class="k">Saldo total cartera visible</p><p class="v ${deudaTotal>0?"av":"ok"}">${$f(deudaTotal)}</p></div>
+    <div class="card"><p class="k">Acuerdos de pago activos</p><p class="v">${acuerdos.length}</p></div>
+  </div>
+  <h2>Estado de cuenta por unidad (D11)</h2>
+  ${tabla(["Recibo","Unidad","Pagador","Cuota","Recargo (RN-06)","Abonado","Saldo actual","Estado"],recs.map(q=>`<tr><td>${q.id}</td><td>Apto. ${q.u}</td><td>${q.pagador}</td><td>${$f(q.cuota)}</td><td>${$f(recEfectivo(q,hoy()))}</td><td>${$f(q.ap)}</td><td><strong>${$f(saldo(q,hoy()))}</strong></td><td>${est(q,hoy())}</td></tr>`).join(""))}
+  <h2>Acuerdos de pago (Máximo 4 cuotas mensuales · D12)</h2>
+  <div class="card">
+    <p class="res" id="ac-err" role="alert"></p>
+    <p class="ok" id="ac-ok" role="status"></p>
+    <div class="filt" style="margin:.3rem 0">
+      <label>Unidad<select id="ac-u">${unidadesDisp.map(u=>`<option value="${u}">Apto. ${u}</option>`).join("")}</select></label>
+      <label>Monto a diferir (COP)<input id="ac-val" type="number" value="325000" step="5000"></label>
+      <label>Plazo en meses (1 a 4)<input id="ac-mes" type="number" value="3" min="1" max="12"></label>
+    </div>
+    <button type="button" id="ac-btn">Registrar acuerdo de pago (D12)</button>
+  </div>
+  ${acuerdos.length?tabla(["ID Acuerdo","Unidad","Monto diferido","Plazo","Cuota mensual","Progreso","Estado"],acuerdos.map(a=>`<tr><td><strong>${a.id}</strong></td><td>Apto. ${a.u}</td><td>${$f(a.total)}</td><td>${a.cuotas} meses</td><td>${$f(a.valorCuota)}</td><td>${a.pagadas} / ${a.cuotas}</td><td><span class="badge">${a.estado}</span></td></tr>`).join("")):'<p class="nota">No hay acuerdos de pago registrados para las unidades visibles.</p>'}`;
+
+  $("#ac-btn").addEventListener("click",()=>{
+    const u=$("#ac-u").value,val=Number($("#ac-val").value),mes=Number($("#ac-mes").value);
+    $("#ac-err").textContent="";$("#ac-ok").textContent="";
+    if(val<=0){$("#ac-err").textContent="✖ El monto a diferir debe ser mayor a $0 COP.";return}
+    if(!Number.isInteger(mes)||mes<1||mes>4){
+      $("#ac-err").textContent="✖ Regla D12: El plazo del acuerdo de pago no puede superar los 4 meses (ingresó "+mes+").";
+      return;
+    }
+    const pag=UNIDADES_CONS.includes(u)?"Constructora":"Propietario";
+    const ac={id:`AC-2026-${String(S.acuerdos.length+1).padStart(2,"0")}`,u,pagador:pag,total:val,cuotas:mes,valorCuota:Math.round(val/mes),pagadas:0,fecha:hoy(),estado:"Vigente"};
+    S.acuerdos.unshift(ac);
+    log("Acuerdo de pago registrado (D12)",`${ac.id} · Apto. ${u} · ${$f(val)} en ${mes} cuotas de ${$f(ac.valorCuota)}`);
+    vP07();
+    $("#ac-ok").textContent=`✔ Acuerdo ${ac.id} creado para Apto. ${u}: ${mes} cuotas mensuales de ${$f(ac.valorCuota)}.`;
+  });
+}
+
+/* Bitácora inalterable (RNF-004.1) */
+function vBit(){
+  $("#main").innerHTML=`<h1 tabindex="-1">Bitácora de auditoría (RNF-004.1)</h1>
+  <p>Registro cronológico inalterable del 100 % de aprobaciones de liquidación, registros de pago, rechazos por duplicidad y cierres contables. Ningún rol posee funciones de edición o borrado.</p>
+  ${S.bit.length?tabla(["Fecha y hora","Rol ejecutor","Operación","Detalle"],S.bit.map(b=>`<tr><td>${b.t}</td><td>${esc(b.u)}</td><td><strong>${esc(b.op)}</strong></td><td>${esc(b.d)}</td></tr>`).join("")):"<p>Aún no hay operaciones registradas.</p>"}`;
+}
+
+/* Autoprueba de reglas y casos de aceptación */
+function vAuto(){
+  const R=auto(),n=R.filter(r=>r[4]).length;
+  $("#main").innerHTML=`<h1 tabindex="-1">Autoprueba de reglas y criterios de aceptación</h1>
+  <p class="${n===R.length?"ok":"res"}" role="status">${n===R.length?"✔":"✖"} ${n} de ${R.length} comprobaciones aprobadas (SRS-OIKOS-001 LB-0.8).</p>
+  <p>Verifica validaciones de campos, días hábiles con festivos, recargo dinámico tras día 10 (RN-06), control anti-duplicados y pago consolidado Constructora (RN-09 / RF-031.3), consecutivos PQRS (RN-03) y aislamiento por unidad (RNF-003.1).</p>
+  ${tabla(["Módulo / Regla","Caso de prueba","Esperado","Obtenido",""],R.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td><td class="${r[4]?"ok":"res"}">${r[4]?"✔":"✖"}</td></tr>`).join(""))}`;
+}
+
+const V={p01:vP01,p02:vP02,p03:vP03,p04:vP04,p05:vP05,p06:vP06,p07:vP07,bitacora:vBit,autoprueba:vAuto};
+
+function route(){
+  const permitidas=NAV.filter(n=>n[2].includes(ROL));
+  const h=location.hash.slice(1);
+  const it=permitidas.find(n=>n[0]===h)||permitidas[0];
+  $("#nav").innerHTML=permitidas.map(n=>`<a href="#${n[0]}"${n[0]===it[0]?' aria-current="page"':""}>${n[1]}</a>`).join("");
+  V[it[0]]();
+  const h1=$("#main h1");if(h1)h1.focus();
+}
+
+$("#rol").addEventListener("change",e=>{ROL=e.target.value;route()});
+$("#reloj").addEventListener("change",e=>{if(!e.target.value)return;RELOJ=e.target.value;route()});
+$("#caso").addEventListener("change",e=>{if(!e.target.value)return;RELOJ=e.target.value;$("#reloj").value=RELOJ;e.target.value="";route()});
+addEventListener("hashchange",route);
+route();
+}
+</script></body></html>
